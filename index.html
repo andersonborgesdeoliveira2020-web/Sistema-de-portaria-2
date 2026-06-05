@@ -63,6 +63,9 @@
         th { background-color: #f2f2f2; color: #333; }
         .status-patio { color: #27ae60; font-weight: bold; }
         .status-encerrado { color: #7f8c8d; font-style: italic; }
+
+        /* Rodapé */
+        .footer-dev { text-align: center; color: white; margin-top: auto; padding: 20px 0; font-size: 15px; font-weight: bold; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -187,6 +190,10 @@
                 <button type="button" class="btn-confirmar-saida" onclick="confirmarSaidaCaminhao()">Confirmar Saída</button>
             </div>
         </div>
+    </div>
+
+    <div class="footer-dev">
+        Desenvolvido por Anderson Borges 2026 | Contato: (11) 92308-6329
     </div>
 
     <script>
@@ -393,7 +400,7 @@
             atualizarTabela();
         });
 
-        // Motor de Busca Avançado
+        // Motor de Busca Avançado (Corrigido e Otimizado)
         function executarBusca() {
             const termo = document.getElementById('campoBusca').value.toLowerCase().trim();
             const painel = document.getElementById('painelResultado');
@@ -406,11 +413,13 @@
             let resultadosHTML = '<h3 style="margin-top:0;">Resultados da Busca:</h3>';
             let encontrou = false;
 
+            // Busca na Portaria Geral
             const portaria = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
             const rPortaria = portaria.filter(p => 
-                p.nome.toLowerCase().includes(termo) || 
-                p.cpf.includes(termo) || 
-                (p.empresa && p.empresa.toLowerCase().includes(termo))
+                (p.nome && p.nome.toLowerCase().includes(termo)) || 
+                (p.cpf && p.cpf.includes(termo)) || 
+                (p.empresa && p.empresa.toLowerCase().includes(termo)) ||
+                (p.visitado && p.visitado.toLowerCase().includes(termo)) // Inclusão da busca pelo Setor/Pessoa
             );
 
             if (rPortaria.length > 0) {
@@ -420,11 +429,13 @@
                 resultadosHTML += '</ul>';
             }
 
+            // Busca em Entregas / Pátio
             const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
             const rEntregas = entregas.filter(e => 
-                e.entregador.toLowerCase().includes(termo) || 
-                e.cpf_entregador.includes(termo) || 
-                e.placa_carro.toLowerCase().includes(termo) ||
+                (e.entregador && e.entregador.toLowerCase().includes(termo)) || 
+                (e.cpf_entregador && e.cpf_entregador.includes(termo)) || 
+                (e.placa_carro && e.placa_carro.toLowerCase().includes(termo)) ||
+                (e.empresa_entrega && e.empresa_entrega.toLowerCase().includes(termo)) ||
                 (e.numero_nf && e.numero_nf.includes(termo)) ||
                 (e.numero_nf_saida && e.numero_nf_saida.includes(termo))
             );
@@ -434,7 +445,7 @@
                 resultadosHTML += '<h4 style="margin-bottom:5px; color:#2980b9;">Entregas e Coletas</h4><ul style="margin-top:0;">';
                 rEntregas.forEach(r => {
                     let nfText = r.operacao === 'Recebimento' ? `NF Ent: ${r.numero_nf}` : `NF Saída: ${r.numero_nf_saida || 'N/A'}`;
-                    resultadosHTML += `<li><strong>${r.operacao}</strong>: ${r.entregador} - Placa: ${r.placa_carro} (${nfText}) | Status: ${r.saida ? 'Concluído' : 'No Pátio'}</li>`;
+                    resultadosHTML += `<li><strong>${r.operacao}</strong>: ${r.entregador} - Transportadora: ${r.empresa_entrega || 'N/A'} - Placa: ${r.placa_carro} (${nfText}) | Status: ${r.saida ? 'Concluído' : 'No Pátio'}</li>`;
                 });
                 resultadosHTML += '</ul>';
             }
