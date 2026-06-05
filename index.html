@@ -14,6 +14,12 @@
         h2 { margin-top: 0; color: #333; text-align: center; margin-bottom: 20px; }
         h3 { color: #555; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; margin-top: 15px; margin-bottom: 15px; }
         
+        /* Sistema de Login */
+        #telaLogin, #telaAdminUsuarios { display: flex; flex-direction: column; align-items: center; }
+        #sistemaPrincipal { display: none; width: 100%; display: flex; flex-direction: column; align-items: center;}
+        .barra-topo { background: #2c3e50; color: white; width: 100%; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; margin-bottom: 20px; box-sizing: border-box; max-width: 850px; }
+        .btn-pequeno { padding: 6px 12px; font-size: 14px; margin-left: 10px; }
+
         /* Menu de Abas */
         .abas-menu { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ccc; width: 100%; }
         .aba-btn { flex: 1; padding: 12px; border: none; background: #e0e0e0; cursor: pointer; font-size: 16px; font-weight: bold; color: #555; transition: 0.3s; border-radius: 8px 8px 0 0; }
@@ -22,7 +28,7 @@
         .aba-conteudo.ativa { display: block; }
 
         label { display: block; margin-bottom: 5px; color: #666; font-weight: 500; }
-        input[type="text"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        input[type="text"], input[type="password"], select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
         
         .busca-container { display: flex; gap: 10px; margin-bottom: 15px; }
         .busca-container input { margin-bottom: 0; flex: 1; }
@@ -31,26 +37,18 @@
         .opcoes-operacao label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #333; font-weight: bold; }
         .opcoes-operacao input[type="radio"] { transform: scale(1.2); cursor: pointer; }
 
-        /* Múltiplas Notas Fiscais */
         .nf-wrapper { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
         .nf-wrapper input { margin-bottom: 0; flex: 1; }
         .btn-add-nf { background-color: #4a90e2; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 18px; }
-        .btn-add-nf:hover { background-color: #357abd; }
         .btn-remove-nf { background-color: #d9534f; color: white; padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        .btn-remove-nf:hover { background-color: #c9302c; }
         
-        /* Estilos de Botões */
         button { padding: 12px 20px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
         .btn-busca { background-color: #4a90e2; color: white; }
-        .btn-busca:hover { background-color: #357abd; }
         .btn-salvar { background-color: #2c3e50; color: white; width: 100%; margin-top: 10px; }
-        .btn-salvar:hover { background-color: #1a252f; }
         .btn-relatorio { background-color: #27ae60; color: white; width: 100%; margin-top: 15px; margin-bottom: 5px; }
-        .btn-relatorio:hover { background-color: #219653; }
         .btn-saida { background-color: #e67e22; color: white; padding: 8px 12px; font-size: 13px; border-radius: 4px; }
-        .btn-saida:hover { background-color: #d35400; }
+        .btn-admin { background-color: #8e44ad; color: white; }
         
-        /* Modal flutuante para a Saída do Caminhão */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
@@ -64,116 +62,162 @@
         .status-patio { color: #27ae60; font-weight: bold; }
         .status-encerrado { color: #7f8c8d; font-style: italic; }
 
-        /* Rodapé */
         .footer-dev { text-align: center; color: white; margin-top: auto; padding: 20px 0; font-size: 15px; font-weight: bold; letter-spacing: 1px; }
+
+        /* Notificação */
+        #notificacao { position: fixed; top: 20px; right: 20px; background-color: #27ae60; color: white; padding: 15px 20px; border-radius: 8px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.2); z-index: 2000; font-weight: bold; }
     </style>
 </head>
 <body>
+
+    <div id="notificacao">Ação realizada com sucesso!</div>
 
     <div class="header">
         <h1>VICON</h1>
         <p>Máquinas Agrícolas</p>
     </div>
 
-    <div class="container">
-        <h2>Controle de Portaria</h2>
-        
-        <div class="abas-menu">
-            <button class="aba-btn ativa" id="btn-aba-portaria" onclick="mudarAba('portaria')">Portaria Geral</button>
-            <button class="aba-btn" id="btn-aba-entregas" onclick="mudarAba('entregas')">Recebimento / Coleta</button>
-        </div>
-
-        <h3>Pesquisar Cadastro</h3>
-        <div class="busca-container">
-            <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF...">
-            <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
-        </div>
-        <div id="painelResultado" style="display: none;"></div>
-
-        <div id="aba-portaria" class="aba-conteudo ativa">
-            <form id="formPortaria">
-                <h3>Cadastro Geral</h3>
-                <label for="tipo">Tipo de Cadastro:</label>
-                <select id="tipo" name="tipo" required>
-                    <option value="Visitante">Visitante</option>
-                    <option value="Prestador">Prestador de Serviço</option>
-                    <option value="Funcionário">Funcionário</option>
-                </select>
-
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" required>
-
-                <label for="cpf">CPF/CNPJ:</label>
-                <input type="text" id="cpf" required>
-
-                <label for="empresa">Empresa (se aplicável):</label>
-                <input type="text" id="empresa">
-
-                <label for="visitado">Quem vai visitar / Setor:</label>
-                <input type="text" id="visitado" required>
-
-                <button type="submit" class="btn-salvar">Salvar Entrada</button>
-            </form>
+    <div id="telaLogin" class="container">
+        <h2>Acesso ao Sistema</h2>
+        <form id="formLogin">
+            <label for="loginUser">Usuário:</label>
+            <input type="text" id="loginUser" required>
             
-            <button type="button" class="btn-relatorio" onclick="gerarExcel()">📊 Gerar Relatório Excel (Portaria)</button>
+            <label for="loginSenha">Senha:</label>
+            <input type="password" id="loginSenha" required>
+            
+            <button type="submit" class="btn-salvar">Entrar</button>
+        </form>
+    </div>
+
+    <div id="telaAdminUsuarios" class="container" style="display: none;">
+        <h2>Gerenciar Operadores</h2>
+        <form id="formNovoUsuario">
+            <label for="novoLoginUser">Novo Usuário:</label>
+            <input type="text" id="novoLoginUser" required>
+            
+            <label for="novoLoginSenha">Senha:</label>
+            <input type="password" id="novoLoginSenha" required>
+            
+            <button type="submit" class="btn-salvar">Cadastrar Usuário</button>
+            <button type="button" class="btn-cancelar" style="width: 100%; margin-top: 10px; padding: 12px; border:none; border-radius:6px; cursor:pointer;" onclick="voltarParaSistema()">Voltar</button>
+        </form>
+        <h3 style="margin-top: 20px;">Usuários Cadastrados</h3>
+        <ul id="listaUsuariosCadastrados" style="text-align: left; width: 100%;"></ul>
+    </div>
+
+    <div id="sistemaPrincipal">
+        
+        <div class="barra-topo">
+            <div>Operador Logado: <span id="spanOperadorLogado" style="font-weight: bold;"></span></div>
+            <div>
+                <button id="btnAdminMode" class="btn-admin btn-pequeno" onclick="abrirAdminUsuarios()" style="display:none;">Gerenciar Usuários</button>
+                <button class="btn-remove-nf btn-pequeno" onclick="realizarLogout()">Sair</button>
+            </div>
         </div>
 
-        <div id="aba-entregas" class="aba-conteudo">
-            <form id="formEntregas">
-                <h3>Tipo de Operação (Entrada)</h3>
-                <div class="opcoes-operacao">
-                    <label>
-                        <input type="radio" name="operacao" value="Recebimento" checked onclick="ajustarCamposOperacao('Recebimento')"> 
-                        Recebimento (Carregado com NF)
-                    </label>
-                    <label>
-                        <input type="radio" name="operacao" value="Coleta" onclick="ajustarCamposOperacao('Coleta')"> 
-                        Coleta (Vazio / Vai Carregar)
-                    </label>
-                </div>
+        <div class="container">
+            <h2>Controle de Portaria</h2>
+            
+            <div class="abas-menu">
+                <button class="aba-btn ativa" id="btn-aba-portaria" onclick="mudarAba('portaria')">Portaria Geral</button>
+                <button class="aba-btn" id="btn-aba-entregas" onclick="mudarAba('entregas')">Recebimento / Coleta</button>
+            </div>
 
-                <h3>Dados do Motorista e Veículo</h3>
-                <label for="entregador">Nome do Motorista:</label>
-                <input type="text" id="entregador" required>
+            <h3>Pesquisar Cadastro</h3>
+            <div class="busca-container">
+                <input type="text" id="campoBusca" placeholder="Digite nome, CPF, placa ou NF...">
+                <button type="button" class="btn-busca" onclick="executarBusca()">Buscar</button>
+            </div>
+            <div id="painelResultado" style="display: none;"></div>
 
-                <label for="cpf_entregador">CPF do Motorista:</label>
-                <input type="text" id="cpf_entregador" required>
+            <div id="aba-portaria" class="aba-conteudo ativa">
+                <form id="formPortaria">
+                    <h3>Cadastro Geral</h3>
+                    <label for="tipo">Tipo de Cadastro:</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="Visitante">Visitante</option>
+                        <option value="Prestador">Prestador de Serviço</option>
+                        <option value="Funcionário">Funcionário</option>
+                    </select>
 
-                <label for="empresa_entrega">Empresa / Transportadora:</label>
-                <input type="text" id="empresa_entrega">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" required>
 
-                <label for="placa_carro">Placa do Veículo:</label>
-                <input type="text" id="placa_carro" required>
+                    <label for="cpf">CPF/CNPJ:</label>
+                    <input type="text" id="cpf" oninput="mascaraCPF(this)" maxlength="14" required>
 
-                <label for="modelo_carro">Modelo do Veículo:</label>
-                <input type="text" id="modelo_carro">
+                    <label for="empresa">Empresa (se aplicável):</label>
+                    <input type="text" id="empresa">
 
-                <div id="secao-nf-entrada">
-                    <label>Número da(s) Nota(s) Fiscal(is) de Entrada:</label>
-                    <div id="lista-nfs-entrada">
-                        <div class="nf-wrapper">
-                            <input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada">
-                            <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button>
+                    <label for="visitado">Quem vai visitar / Setor:</label>
+                    <input type="text" id="visitado" required>
+
+                    <h3>Dados do Veículo (Opcional)</h3>
+                    <label for="placa_portaria">Placa do Veículo:</label>
+                    <input type="text" id="placa_portaria" oninput="mascaraPlaca(this)" maxlength="8">
+                    
+                    <label for="modelo_portaria">Modelo do Veículo:</label>
+                    <input type="text" id="modelo_portaria">
+
+                    <button type="submit" class="btn-salvar">Salvar Entrada</button>
+                </form>
+                
+                <button type="button" class="btn-relatorio" onclick="gerarExcel()">📊 Gerar Relatório Excel (Portaria)</button>
+            </div>
+
+            <div id="aba-entregas" class="aba-conteudo">
+                <form id="formEntregas">
+                    <h3>Tipo de Operação (Entrada)</h3>
+                    <div class="opcoes-operacao">
+                        <label><input type="radio" name="operacao" value="Recebimento" checked onclick="ajustarCamposOperacao('Recebimento')"> Recebimento (Carregado com NF)</label>
+                        <label><input type="radio" name="operacao" value="Coleta" onclick="ajustarCamposOperacao('Coleta')"> Coleta (Vazio / Vai Carregar)</label>
+                    </div>
+
+                    <h3>Dados do Motorista e Veículo</h3>
+                    <label for="entregador">Nome do Motorista:</label>
+                    <input type="text" id="entregador" required>
+
+                    <label for="cpf_entregador">CPF do Motorista:</label>
+                    <input type="text" id="cpf_entregador" oninput="mascaraCPF(this)" maxlength="14" required>
+
+                    <label for="empresa_entrega">Empresa / Transportadora:</label>
+                    <input type="text" id="empresa_entrega">
+
+                    <label for="placa_carro">Placa do Veículo:</label>
+                    <input type="text" id="placa_carro" oninput="mascaraPlaca(this)" maxlength="8" required>
+
+                    <label for="modelo_carro">Modelo do Veículo:</label>
+                    <input type="text" id="modelo_carro">
+
+                    <div id="secao-nf-entrada">
+                        <label>Número da(s) Nota(s) Fiscal(is) de Entrada:</label>
+                        <div id="lista-nfs-entrada">
+                            <div class="nf-wrapper">
+                                <input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada">
+                                <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn-salvar">Registrar Entrada no Pátio</button>
-            </form>
+                    <button type="submit" class="btn-salvar">Registrar Entrada no Pátio</button>
+                </form>
 
-            <button type="button" class="btn-relatorio" onclick="gerarExcel()">📊 Gerar Relatório Excel (Pátio)</button>
+                <button type="button" class="btn-relatorio" onclick="gerarExcel()">📊 Gerar Relatório Excel (Pátio)</button>
+            </div>
         </div>
-    </div>
 
-    <div class="container" style="max-width: 850px;">
-        <h3 id="tituloRelatorio">Pessoas no Interior da Empresa</h3>
-        <table id="tabelaRelatorio">
-            <thead id="cabecalhoTabela"></thead>
-            <tbody></tbody>
-        </table>
-    </div>
+        <div class="container" style="max-width: 850px;">
+            <h3 id="tituloRelatorio">Pessoas no Interior da Empresa</h3>
+            <div style="overflow-x: auto;">
+                <table id="tabelaRelatorio">
+                    <thead id="cabecalhoTabela"></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
 
-    <div id="modalSaida" class="modal">
+    </div> <div id="modalSaida" class="modal">
         <div class="modal-content">
             <h3 style="margin-top:0;">Registrar Saída do Veículo</h3>
             <p>O veículo está saindo com Nota Fiscal de Saída/Coleta?</p>
@@ -197,10 +241,142 @@
     </div>
 
     <script>
-        let abaAtiva = 'portaria';
-        let indexCaminhaoSelecionado = null;
+        // ======= FUNÇÕES DE SEGURANÇA E UTILIDADE =======
+        function escaparHTML(texto) {
+            if (!texto) return '';
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML;
+        }
 
-        // Gerenciamento de Abas
+        function mostrarNotificacao(mensagem) {
+            const notif = document.getElementById('notificacao');
+            notif.innerText = mensagem;
+            notif.style.display = 'block';
+            setTimeout(() => { notif.style.display = 'none'; }, 3000);
+        }
+
+        function mascaraCPF(campo) {
+            let v = campo.value.replace(/\D/g,"");
+            v = v.replace(/(\d{3})(\d)/,"$1.$2");
+            v = v.replace(/(\d{3})(\d)/,"$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+            campo.value = v;
+        }
+
+        function mascaraPlaca(campo) {
+            let v = campo.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+            if (v.length > 3) {
+                v = v.substring(0, 3) + '-' + v.substring(3);
+            }
+            campo.value = v;
+        }
+
+        function obterDataHoraAtual() {
+            const agora = new Date();
+            return `${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        // ======= SISTEMA DE LOGIN E USUÁRIOS =======
+        let usuarioLogado = null;
+
+        function inicializarUsuarios() {
+            let usuarios = JSON.parse(localStorage.getItem('vicon_usuarios') || '{}');
+            if (Object.keys(usuarios).length === 0) {
+                usuarios['admin'] = { senha: 'admin123', tipo: 'admin' };
+                localStorage.setItem('vicon_usuarios', JSON.stringify(usuarios));
+            }
+        }
+
+        function verificarLogin() {
+            inicializarUsuarios();
+            const logado = sessionStorage.getItem('vicon_logado');
+            if (logado) {
+                usuarioLogado = logado;
+                document.getElementById('telaLogin').style.display = 'none';
+                document.getElementById('sistemaPrincipal').style.display = 'flex';
+                document.getElementById('spanOperadorLogado').innerText = logado;
+                
+                let usuarios = JSON.parse(localStorage.getItem('vicon_usuarios') || '{}');
+                if (usuarios[logado] && usuarios[logado].tipo === 'admin') {
+                    document.getElementById('btnAdminMode').style.display = 'inline-block';
+                } else {
+                    document.getElementById('btnAdminMode').style.display = 'none';
+                }
+                atualizarTabela();
+            } else {
+                document.getElementById('telaLogin').style.display = 'flex';
+                document.getElementById('sistemaPrincipal').style.display = 'none';
+                document.getElementById('telaAdminUsuarios').style.display = 'none';
+            }
+        }
+
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginSenha').value;
+            let usuarios = JSON.parse(localStorage.getItem('vicon_usuarios') || '{}');
+            
+            if (usuarios[user] && usuarios[user].senha === pass) {
+                sessionStorage.setItem('vicon_logado', user);
+                this.reset();
+                mostrarNotificacao("Login realizado com sucesso!");
+                verificarLogin();
+            } else {
+                alert("Usuário ou senha incorretos!");
+            }
+        });
+
+        function realizarLogout() {
+            sessionStorage.removeItem('vicon_logado');
+            usuarioLogado = null;
+            verificarLogin();
+        }
+
+        // ======= ADMINISTRAÇÃO DE USUÁRIOS =======
+        function abrirAdminUsuarios() {
+            document.getElementById('sistemaPrincipal').style.display = 'none';
+            document.getElementById('telaAdminUsuarios').style.display = 'flex';
+            renderizarListaUsuarios();
+        }
+
+        function voltarParaSistema() {
+            document.getElementById('telaAdminUsuarios').style.display = 'none';
+            document.getElementById('sistemaPrincipal').style.display = 'flex';
+        }
+
+        function renderizarListaUsuarios() {
+            const ul = document.getElementById('listaUsuariosCadastrados');
+            ul.innerHTML = '';
+            let usuarios = JSON.parse(localStorage.getItem('vicon_usuarios') || '{}');
+            for (let u in usuarios) {
+                ul.innerHTML += `<li><strong>${escaparHTML(u)}</strong> (${usuarios[u].tipo})</li>`;
+            }
+        }
+
+        document.getElementById('formNovoUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('novoLoginUser').value.trim();
+            const pass = document.getElementById('novoLoginSenha').value;
+            let usuarios = JSON.parse(localStorage.getItem('vicon_usuarios') || '{}');
+            
+            if (usuarios[user]) {
+                alert("Este usuário já existe!");
+                return;
+            }
+            
+            usuarios[user] = { senha: pass, tipo: 'operador' };
+            localStorage.setItem('vicon_usuarios', JSON.stringify(usuarios));
+            this.reset();
+            mostrarNotificacao("Usuário cadastrado com sucesso!");
+            renderizarListaUsuarios();
+        });
+
+
+        // ======= SISTEMA PRINCIPAL (PORTARIA) =======
+        let abaAtiva = 'portaria';
+        let indexVeiculoSelecionado = null;
+
         function mudarAba(aba) {
             abaAtiva = aba;
             document.querySelectorAll('.aba-btn').forEach(btn => btn.classList.remove('ativa'));
@@ -220,7 +396,6 @@
             atualizarTabela();
         }
 
-        // Ajusta campos obrigatórios de NF dependendo da operação
         function ajustarCamposOperacao(tipo) {
             const secaoNF = document.getElementById('secao-nf-entrada');
             const primeiraNF = document.getElementById('primeira-nf-entrada');
@@ -233,53 +408,49 @@
             }
         }
 
-        // Adiciona campos de NF dinamicamente (+)
         function adicionarCampoNF(idContainer, classeInput) {
             const container = document.getElementById(idContainer);
             const novoBloco = document.createElement('div');
             novoBloco.className = 'nf-wrapper';
-            novoBloco.innerHTML = `
-                <input type="text" class="${classeInput}" placeholder="Digite outra NF" required>
-                <button type="button" class="btn-remove-nf" onclick="this.parentElement.remove()">x</button>
-            `;
+            novoBloco.innerHTML = `<input type="text" class="${classeInput}" placeholder="Digite outra NF" required><button type="button" class="btn-remove-nf" onclick="this.parentElement.remove()">x</button>`;
             container.appendChild(novoBloco);
         }
 
         function resetarCamposNFEntrada() {
-            document.getElementById('lista-nfs-entrada').innerHTML = `
-                <div class="nf-wrapper">
-                    <input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada">
-                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button>
-                </div>
-            `;
+            document.getElementById('lista-nfs-entrada').innerHTML = `<div class="nf-wrapper"><input type="text" class="input-nf-entrada" id="primeira-nf-entrada" placeholder="Número da NF de Entrada"><button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-entrada', 'input-nf-entrada')">+</button></div>`;
         }
 
         function resetarCamposNFSaida() {
-            document.getElementById('lista-nfs-saida').innerHTML = `
-                <div class="nf-wrapper">
-                    <input type="text" class="input-nf-saida" placeholder="Número da NF de Saída (Opcional)">
-                    <button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-saida', 'input-nf-saida')">+</button>
-                </div>
-            `;
+            document.getElementById('lista-nfs-saida').innerHTML = `<div class="nf-wrapper"><input type="text" class="input-nf-saida" placeholder="Número da NF de Saída (Opcional)"><button type="button" class="btn-add-nf" onclick="adicionarCampoNF('lista-nfs-saida', 'input-nf-saida')">+</button></div>`;
         }
 
-        function obterDataHoraAtual() {
-            const agora = new Date();
-            return `${agora.toLocaleDateString('pt-BR')} às ${agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
-        }
-
-        // Atualiza a tabela com base na aba ativa
+        // Tabela
         function atualizarTabela() {
             const tbody = document.getElementById('tabelaRelatorio').querySelector('tbody');
             const cabecalho = document.getElementById('cabecalhoTabela');
             tbody.innerHTML = '';
 
             if (abaAtiva === 'portaria') {
-                cabecalho.innerHTML = `<tr><th>Tipo</th><th>Nome</th><th>CPF</th><th>Quem vai Visitar</th></tr>`;
+                cabecalho.innerHTML = `<tr><th>Tipo</th><th>Nome/Empresa</th><th>Veículo</th><th>Entrada</th><th>Saída</th><th>Ações</th></tr>`;
                 const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                registros.forEach(r => {
+                
+                registros.forEach((r, index) => {
                     const linha = document.createElement('tr');
-                    linha.innerHTML = `<td>${r.tipo}</td><td>${r.nome}</td><td>${r.cpf}</td><td>${r.visitado}</td>`;
+                    let acao = `<span class="status-encerrado">Concluído</span>`;
+                    if (!r.saida) {
+                        acao = `<button class="btn-saida" onclick="darSaidaPortaria(${index})">Dar Saída</button>`;
+                    }
+
+                    let dadosVeiculo = r.placa ? `${escaparHTML(r.placa)}<br><small>${escaparHTML(r.modelo)}</small>` : '-';
+                    
+                    linha.innerHTML = `
+                        <td>${escaparHTML(r.tipo)}</td>
+                        <td><strong>${escaparHTML(r.nome)}</strong><br><small>${escaparHTML(r.empresa || 'S/ Empresa')}</small></td>
+                        <td>${dadosVeiculo}</td>
+                        <td><small>${escaparHTML(r.entrada)}</small></td>
+                        <td><small>${r.saida ? escaparHTML(r.saida) : '<span class="status-patio">Dentro</span>'}</small></td>
+                        <td>${acao}</td>
+                    `;
                     tbody.appendChild(linha);
                 });
             } else {
@@ -294,15 +465,15 @@
                     }
 
                     let exibicaoNotas = '';
-                    if(e.numero_nf) exibicaoNotas += `<br><small style="color:#2980b9">NF Entr: ${e.numero_nf}</small>`;
-                    if(e.numero_nf_saida) exibicaoNotas += `<br><small style="color:#d35400">NF Saíd: ${e.numero_nf_saida}</small>`;
+                    if(e.numero_nf) exibicaoNotas += `<br><small style="color:#2980b9">NF Entr: ${escaparHTML(e.numero_nf)}</small>`;
+                    if(e.numero_nf_saida) exibicaoNotas += `<br><small style="color:#d35400">NF Saíd: ${escaparHTML(e.numero_nf_saida)}</small>`;
 
                     linha.innerHTML = `
-                        <td style="font-weight:bold; color:${e.operacao === 'Recebimento' ? '#2980b9' : '#8e44ad'}">${e.operacao}</td>
-                        <td>${e.entregador} ${exibicaoNotas}</td>
-                        <td>${e.placa_carro}</td>
-                        <td><small>${e.entrada}</small></td>
-                        <td><small>${e.saida ? e.saida : '<span class="status-patio">No Pátio</span>'}</small></td>
+                        <td style="font-weight:bold; color:${e.operacao === 'Recebimento' ? '#2980b9' : '#8e44ad'}">${escaparHTML(e.operacao)}</td>
+                        <td>${escaparHTML(e.entregador)} ${exibicaoNotas}</td>
+                        <td>${escaparHTML(e.placa_carro)}</td>
+                        <td><small>${escaparHTML(e.entrada)}</small></td>
+                        <td><small>${e.saida ? escaparHTML(e.saida) : '<span class="status-patio">No Pátio</span>'}</small></td>
                         <td>${acao}</td>
                     `;
                     tbody.appendChild(linha);
@@ -310,46 +481,57 @@
             }
         }
 
-        // Modais de Saída
+        // Saída Portaria Geral
+        function darSaidaPortaria(index) {
+            if(confirm("Confirmar a saída desta pessoa?")) {
+                let lista = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
+                if(lista[index]) {
+                    lista[index].saida = obterDataHoraAtual();
+                    localStorage.setItem('vicon_portaria', JSON.stringify(lista));
+                    mostrarNotificacao("Saída registrada!");
+                    atualizarTabela();
+                }
+            }
+        }
+
+        // Saída Caminhões (Entregas)
         function abrirModalSaida(index) {
-            indexCaminhaoSelecionado = index;
+            indexVeiculoSelecionado = index;
             resetarCamposNFSaida();
             document.getElementById('modalSaida').style.display = 'flex';
         }
 
         function fecharModalSaida() {
             document.getElementById('modalSaida').style.display = 'none';
-            indexCaminhaoSelecionado = null;
+            indexVeiculoSelecionado = null;
         }
 
-        // Registro de saída com validação de índice (Segurança)
         function confirmarSaidaCaminhao() {
-            if (indexCaminhaoSelecionado === null) return;
-            
+            if (indexVeiculoSelecionado === null) return;
             let lista = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
             
-            if (!lista[indexCaminhaoSelecionado]) {
-                alert("Erro ao localizar o veículo. Atualize a página e tente novamente.");
+            if (!lista[indexVeiculoSelecionado]) {
+                alert("Erro. Atualize a página.");
                 fecharModalSaida();
                 return;
             }
 
             const inputsNFSaida = document.querySelectorAll('.input-nf-saida');
             let nfsSaida = [];
-            
             inputsNFSaida.forEach(input => {
                 if(input.value.trim() !== "") nfsSaida.push(input.value.trim());
             });
 
-            lista[indexCaminhaoSelecionado].saida = obterDataHoraAtual();
-            lista[indexCaminhaoSelecionado].numero_nf_saida = nfsSaida.join(', ');
+            lista[indexVeiculoSelecionado].saida = obterDataHoraAtual();
+            lista[indexVeiculoSelecionado].numero_nf_saida = nfsSaida.join(', ');
 
             localStorage.setItem('vicon_entregas', JSON.stringify(lista));
             fecharModalSaida();
+            mostrarNotificacao("Saída de veículo registrada!");
             atualizarTabela();
         }
 
-        // Submit: Formulário Portaria Geral
+        // Formulários Submit
         document.getElementById('formPortaria').addEventListener('submit', function(e) {
             e.preventDefault();
             const novo = {
@@ -357,20 +539,23 @@
                 nome: document.getElementById('nome').value,
                 cpf: document.getElementById('cpf').value.trim(),
                 empresa: document.getElementById('empresa').value,
-                visitado: document.getElementById('visitado').value
+                visitado: document.getElementById('visitado').value,
+                placa: document.getElementById('placa_portaria').value.trim(),
+                modelo: document.getElementById('modelo_portaria').value,
+                entrada: obterDataHoraAtual(),
+                saida: null
             };
             let lista = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
             lista.push(novo);
             localStorage.setItem('vicon_portaria', JSON.stringify(lista));
             this.reset();
+            mostrarNotificacao("Entrada na Portaria registrada com sucesso!");
             atualizarTabela();
         });
 
-        // Submit: Formulário Recebimento / Coleta
         document.getElementById('formEntregas').addEventListener('submit', function(e) {
             e.preventDefault();
             const operacao = document.querySelector('input[name="operacao"]:checked').value;
-            
             const inputsNFEntrada = document.querySelectorAll('.input-nf-entrada');
             let nfsEntrada = [];
             inputsNFEntrada.forEach(input => {
@@ -382,7 +567,7 @@
                 entregador: document.getElementById('entregador').value,
                 cpf_entregador: document.getElementById('cpf_entregador').value.trim(),
                 empresa_entrega: document.getElementById('empresa_entrega').value,
-                placa_carro: document.getElementById('placa_carro').value.toUpperCase(),
+                placa_carro: document.getElementById('placa_carro').value.trim(),
                 modelo_carro: document.getElementById('modelo_carro').value,
                 numero_nf: operacao === 'Recebimento' ? nfsEntrada.join(', ') : '',
                 entrada: obterDataHoraAtual(),
@@ -397,45 +582,40 @@
             this.reset();
             resetarCamposNFEntrada();
             ajustarCamposOperacao('Recebimento');
+            mostrarNotificacao("Entrada no Pátio registrada com sucesso!");
             atualizarTabela();
         });
 
-        // Motor de Busca Avançado (Corrigido e Otimizado)
+        // Busca
         function executarBusca() {
             const termo = document.getElementById('campoBusca').value.toLowerCase().trim();
             const painel = document.getElementById('painelResultado');
             
-            if (!termo) {
-                painel.style.display = 'none';
-                return;
-            }
+            if (!termo) { painel.style.display = 'none'; return; }
 
-            let resultadosHTML = '<h3 style="margin-top:0;">Resultados da Busca:</h3>';
+            let resultadosHTML = '<h3 style="margin-top:0;">Resultados:</h3>';
             let encontrou = false;
 
-            // Busca na Portaria Geral
             const portaria = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
             const rPortaria = portaria.filter(p => 
                 (p.nome && p.nome.toLowerCase().includes(termo)) || 
                 (p.cpf && p.cpf.includes(termo)) || 
-                (p.empresa && p.empresa.toLowerCase().includes(termo)) ||
-                (p.visitado && p.visitado.toLowerCase().includes(termo)) // Inclusão da busca pelo Setor/Pessoa
+                (p.placa && p.placa.toLowerCase().includes(termo)) ||
+                (p.empresa && p.empresa.toLowerCase().includes(termo))
             );
 
             if (rPortaria.length > 0) {
                 encontrou = true;
                 resultadosHTML += '<h4 style="margin-bottom:5px; color:#2c3e50;">Portaria Geral</h4><ul style="margin-top:0;">';
-                rPortaria.forEach(r => resultadosHTML += `<li><strong>${r.nome}</strong> (CPF: ${r.cpf}) - Empresa: ${r.empresa || 'N/A'} | Visita: ${r.visitado}</li>`);
+                rPortaria.forEach(r => resultadosHTML += `<li><strong>${escaparHTML(r.nome)}</strong> (CPF: ${escaparHTML(r.cpf)}) - Placa: ${escaparHTML(r.placa || 'N/A')} | Status: ${r.saida ? 'Saiu' : 'Dentro'}</li>`);
                 resultadosHTML += '</ul>';
             }
 
-            // Busca em Entregas / Pátio
             const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
             const rEntregas = entregas.filter(e => 
                 (e.entregador && e.entregador.toLowerCase().includes(termo)) || 
                 (e.cpf_entregador && e.cpf_entregador.includes(termo)) || 
                 (e.placa_carro && e.placa_carro.toLowerCase().includes(termo)) ||
-                (e.empresa_entrega && e.empresa_entrega.toLowerCase().includes(termo)) ||
                 (e.numero_nf && e.numero_nf.includes(termo)) ||
                 (e.numero_nf_saida && e.numero_nf_saida.includes(termo))
             );
@@ -444,74 +624,55 @@
                 encontrou = true;
                 resultadosHTML += '<h4 style="margin-bottom:5px; color:#2980b9;">Entregas e Coletas</h4><ul style="margin-top:0;">';
                 rEntregas.forEach(r => {
-                    let nfText = r.operacao === 'Recebimento' ? `NF Ent: ${r.numero_nf}` : `NF Saída: ${r.numero_nf_saida || 'N/A'}`;
-                    resultadosHTML += `<li><strong>${r.operacao}</strong>: ${r.entregador} - Transportadora: ${r.empresa_entrega || 'N/A'} - Placa: ${r.placa_carro} (${nfText}) | Status: ${r.saida ? 'Concluído' : 'No Pátio'}</li>`;
+                    resultadosHTML += `<li><strong>${escaparHTML(r.operacao)}</strong>: ${escaparHTML(r.entregador)} - Placa: ${escaparHTML(r.placa_carro)} | Status: ${r.saida ? 'Concluído' : 'No Pátio'}</li>`;
                 });
                 resultadosHTML += '</ul>';
             }
 
-            if (!encontrou) {
-                resultadosHTML += '<p style="color:#e74c3c; font-weight:bold;">Nenhum registro encontrado para essa busca.</p>';
-            }
+            if (!encontrou) resultadosHTML += '<p style="color:#e74c3c; font-weight:bold;">Nenhum registro encontrado.</p>';
 
             painel.className = 'resultado-busca';
             painel.innerHTML = resultadosHTML;
             painel.style.display = 'block';
         }
 
-        // Função Dinâmica de Exportação para Excel (Tratada contra quebras e erros de acentuação)
+        // Exportação CSV Otimizada (Blob)
         function gerarExcel() {
             if (abaAtiva === 'portaria') {
                 const registros = JSON.parse(localStorage.getItem('vicon_portaria') || '[]');
-                if (registros.length === 0) {
-                    alert("Não há dados de Portaria Geral para exportar.");
-                    return;
-                }
+                if (registros.length === 0) { alert("Sem dados."); return; }
 
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // \uFEFF corrige acentuação no Excel Windows
-                csvContent += "Tipo;Nome;CPF;Empresa;Quem Visitou\n";
-
-                registros.forEach(function(r) {
-                    let nome = r.nome.replace(/;/g, ',');
-                    let empresa = r.empresa ? r.empresa.replace(/;/g, ',') : '-';
-                    let visitado = r.visitado.replace(/;/g, ',');
-                    csvContent += `${r.tipo};${nome};${r.cpf};${empresa};${visitado}\n`;
+                let csvContent = "\uFEFFTipo;Nome;CPF;Empresa;Quem Visitou;Placa;Modelo;Entrada;Saida\n";
+                registros.forEach(r => {
+                    csvContent += `${r.tipo};${r.nome};${r.cpf};${r.empresa||'-'};${r.visitado};${r.placa||'-'};${r.modelo||'-'};${r.entrada};${r.saida||'Dentro'}\n`.replace(/undefined/g, '-');
                 });
-
-                baixarCSV(csvContent, "relatorio_portaria_vicon.csv");
+                baixarCSV(csvContent, "relatorio_portaria.csv");
             } else {
                 const entregas = JSON.parse(localStorage.getItem('vicon_entregas') || '[]');
-                if (entregas.length === 0) {
-                    alert("Não há dados de Recebimento/Coleta para exportar.");
-                    return;
-                }
+                if (entregas.length === 0) { alert("Sem dados."); return; }
 
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-                csvContent += "Operação;Motorista;CPF Motorista;Transportadora;Placa;Modelo;NF Entrada;Entrada;Saída;NF Saída\n";
-
-                entregas.forEach(function(e) {
-                    let entregador = e.entregador.replace(/;/g, ',');
-                    let empresa = e.empresa_entrega ? e.empresa_entrega.replace(/;/g, ',') : '-';
-                    let modelo = e.modelo_carro ? e.modelo_carro.replace(/;/g, ',') : '-';
-                    csvContent += `${e.operacao};${entregador};${e.cpf_entregador};${empresa};${e.placa_carro};${modelo};${e.numero_nf || '-'};${e.entrada};${e.saida || 'No Pátio'};${e.numero_nf_saida || '-'}\n`;
+                let csvContent = "\uFEFFOperação;Motorista;CPF;Transportadora;Placa;Modelo;NF Entrada;Entrada;Saída;NF Saída\n";
+                entregas.forEach(e => {
+                    csvContent += `${e.operacao};${e.entregador};${e.cpf_entregador};${e.empresa_entrega||'-'};${e.placa_carro};${e.modelo_carro||'-'};${e.numero_nf||'-'};${e.entrada};${e.saida||'No Pátio'};${e.numero_nf_saida||'-'}\n`.replace(/undefined/g, '-');
                 });
-
-                baixarCSV(csvContent, "relatorio_patio_vicon.csv");
+                baixarCSV(csvContent, "relatorio_patio.csv");
             }
         }
 
         function baixarCSV(content, filename) {
-            const encodedUri = encodeURI(content);
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
             link.setAttribute("download", filename);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         window.onload = function() {
-            atualizarTabela();
+            verificarLogin();
         };
     </script>
 </body>
