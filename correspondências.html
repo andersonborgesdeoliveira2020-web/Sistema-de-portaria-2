@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Vicon - Correspondências</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f9; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: #fff; margin-bottom: 10px; }
+        #camera-zone { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; }
+        #video { width: 100%; height: 250px; background: #000; display: none; margin-bottom: 10px; }
+        textarea { width: 100%; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:100; justify-content:center; align-items:center; }
+        .modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:400px; text-align:center; }
+        canvas { border:1px solid #000; width:100%; height:150px; touch-action:none; background:#fff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>📦 Recebimento Inteligente</h3>
+    <div id="camera-zone"></div>
+    <video id="video" autoplay playsinline></video>
+    
+    <button class="btn" style="background:#3498db" onclick="iniciarLeitura('QR')">📷 Ler QR / Barras</button>
+    <button class="btn" style="background:#27ae60" onclick="iniciarOCR()">📄 Leitura OCR (Texto)</button>
+    <textarea id="resultado" placeholder="Dados da etiqueta..."></textarea>
+    <button class="btn" style="background:#2c3e50" onclick="salvarEncomenda()">💾 Salvar no Estoque</button>
+</div>
+
+<div class="container">
+    <h3>📤 Dar Saída / Baixa</h3>
+    <button class="btn" style="background:#e67e22" onclick="iniciarLeituraSaida()">📷 Escanear para Baixa</button>
+</div>
+
+<div id="modalAssinatura" class="modal">
+    <div class="modal-content">
+        <h4 id="tituloModal">Assine abaixo para retirar</h4>
+        <canvas id="canvasSig"></canvas>
+        <button class="btn" style="background:#27ae60; margin-top:10px;" onclick="confirmarBaixa()">Confirmar Entrega</button>
+        <button class="btn" style="background:#7f8c8d" onclick="fecharModal()">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    const cameraZone = document.getElementById('camera-zone');
+    const video = document.getElementById('video');
+    const resultado = document.getElementById('resultado');
+    const canvasSig = document.getElementById('canvasSig');
+    const ctxSig = canvasSig.getContext('2d');
+    let indiceEncontrado = null;
+    let desenhando = false;
+
+    // --- ENTRADA (SCANNER E OCR) ---
+    function iniciarLeitura(tipo) {
+        cameraZone.style.display = 'block';
+        video.style.display = 'none';
+        const scanner = new Html5Qrcode("camera-zone");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, 
+            (decodedText) => { scanner.stop(); cameraZone.style.display = 'none'; resultado.value = decodedText; }
+        );
+    }
+
+    async function iniciarOCR() {
+        cameraZone.style.display = 'none';
+        video.style.display = 'block';
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        setTimeout(async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const { data: { text } } = await Tesseract.recognize(canvas.toDataURL(), 'por');
+            resultado.value = text;
+            video.style.display = 'none';
+            stream.getTracks().forEach(t => t.stop());
+        }, 2000);
+    }
+
+    function salvarEncomenda() {
+        if(!resultado.value) return alert("Nada para salvar!");
+        let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
+        lista.push({ codigo: resultado.value.trim(), status: 'Aguardando', data: new Date().toLocaleString() });
+        localStorage.setItem('encomendas_vicon', JSON.stringify(lista));
+        alert("Salvo no estoque!");
+        resultado.value = "";
+    }
+
+    // --- SAÍDA (BAIXA E ASSINATURA) ---
+    function iniciarLeituraSaida() {
+        cameraZone.style.display = 'block';
+        const scanner = new Html5Qrcode("camera-zone");
+        scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, 
+            (decodedText) => { scanner.stop(); cameraZone.style.display = 'none'; localizarEncomenda(decodedText); }
+        );
+    }
+
+    function localizarEncomenda(codigo) {
+        let lista = JSON.parse(localStorage.getItem('encomendas_vicon') || '[]');
+        let index = lista.findIndex(e => e.codigo.trim() === codigo.trim() && e.status === 'Aguardando');
+        if (index !== -1) {
+            indiceEncontrado = index;
+            document.getElementById('modalAssinatura').style.display = 'flex';
+        } else {
+            alert("Encomenda não encontrada!");
+        }
+    }
+
+    // Canvas de Assinatura
+    canvasSig.onmousedown = () => desenhando = true;
+    canvasSig.onmouseup = () => desenhando = false;
+    canvasSig.onmousemove = (e) => {
+        if(!desenhando) return;
+        ctxSig.lineTo(e.offsetX, e.offsetY);
+        ctxSig.stroke();
+    };
+
+    function confirmarBaixa() {
+        let lista = JSON.parse(localStorage.getItem('encomendas_vicon'));
+        lista[indiceEncontrado].status = 'Entregue';
+        lista[indiceEncontrado].assinatura = canvasSig.toDataURL();
+        localStorage.setItem('encomendas_vicon', JSON.stringify(lista));
+        alert("Baixa confirmada com sucesso!");
+        location.reload();
+    }
+
+    function fecharModal() { document.getElementById('modalAssinatura').style.display = 'none'; }
+</script>
+</body>
+</html>
